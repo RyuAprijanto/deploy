@@ -337,6 +337,7 @@ public function processRestock(Request $request)
 {
     $selectedProducts = $request->input('products', []);
     $restockQuantities = $request->input('restock_qty', []);
+    $restockExpiryDates = $request->input('restock_expiry', []);
     $temp = 0;
     $flag = 0;
     foreach ($selectedProducts as $productId) {
@@ -345,6 +346,7 @@ public function processRestock(Request $request)
         if ($product) {
             $newProduct = $product->replicate();
             $newProduct->stock = $restockQuantities[$productId] ?? 0;
+            $newProduct->expired_date = $restockExpiryDates[$productId] ?? null;
             $temp+=$temp+$newProduct->stock*$newProduct->buy_price;
             $newProduct->save();
             $flag = 1;
