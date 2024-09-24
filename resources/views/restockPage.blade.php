@@ -44,6 +44,7 @@
                     <th class="py-2 px-4 border-b">Stok Produk</th>
                     <th class="py-2 px-4 border-b">Tanggal Kedaluarsa</th>
                     <th class="py-2 px-4 border-b">Jumlah Stok</th>
+                    <th class="py-2 px-4 border-b">Tanggal Kedaluarsa Stok Baru</th>
                 </tr>
             </thead>
             <tbody>
@@ -57,6 +58,9 @@
                     <td class="py-2 px-4 border-b">{{ $product->expired_date }}</td>
                     <td class="py-2 px-4 border-b">
                         <input type="number" name="restock_qty[{{ $product->id }}]" min="1" class="w-full px-3 h-10 rounded border-2 border-gray-300 focus:outline-none focus:border-gray-700">
+                    </td>
+                    <td class="py-2 px-4 border-b">
+                        <input type="date" name="restock_expiry[{{ $product->id }}]" class="w-full px-3 h-10 rounded border-2 border-gray-300 focus:outline-none focus:border-gray-700">
                     </td>
                 </tr>
                 @endforeach
