@@ -336,6 +336,8 @@ public function showRestockPage(Request $request)
 public function processRestock(Request $request)
 {
     $selectedProducts = $request->input('products', []);
+    $restockBuyPrice = $request->input('restock_buyprice', []);
+    $restockSellPrice = $request->input('restock_sellprice', []);
     $restockQuantities = $request->input('restock_qty', []);
     $restockExpiryDates = $request->input('restock_expiry', []);
     $temp = 0;
@@ -347,6 +349,8 @@ public function processRestock(Request $request)
             $newProduct = $product->replicate();
             $newProduct->stock = $restockQuantities[$productId] ?? 0;
             $newProduct->expired_date = $restockExpiryDates[$productId] ?? null;
+            $newProduct->buy_price = $restockBuyPrice[$productId] ?? 0;
+            $newProduct->sell_price = $restockSellPrice[$productId] ?? 0;
             $temp+=$temp+$newProduct->stock*$newProduct->buy_price;
             $newProduct->save();
             $flag = 1;

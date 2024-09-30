@@ -13,5 +13,10 @@ class Checkout extends Model
     {
         return $this->hasMany(CheckoutItem::class);
     }
+
+    public function paymentType()
+    {
+        return $this->belongsTo(PaymentType::class, 'payment_type_id');
+    }
 }
 

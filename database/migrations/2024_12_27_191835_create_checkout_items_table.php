@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamps();
         
             $table->foreign('checkout_id')->references('id')->on('checkouts')->onDelete('cascade');
+            
         });
         
     }

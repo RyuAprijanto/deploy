@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Checkout;
+use App\Models\PaymentType;
 use App\Models\CheckoutItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,29 +14,32 @@ class CheckoutController extends Controller
 {
     public function viewCheckout()
 {
-    $userId = Auth::id(); // Get the current user's ID
-    
+    $userId = Auth::id();
+
     // Retrieve checkout items and calculate total price
     $checkoutItems = session('checkoutItems', []);
     $totalPrice = array_reduce($checkoutItems, function ($carry, $item) {
         return $carry + ($item['price'] * $item['quantity']);
     }, 0);
-    
+
     // Fetch distinct product types for the current user
     $allTypes = DB::table('products')
         ->join('types', 'products.type_id', '=', 'types.id')
         ->where('products.user_id', '=', $userId)
-        ->where('products.stock', '>', 0) // Ensure the product has stock
+        ->where('products.stock', '>', 0)
         ->select('types.name')
         ->distinct()
         ->pluck('name');
-    
+
+    // Fetch payment types
+    $paymentTypes = DB::table('payment_types')->get();
+
     // Fetch paginated products for the current user with at least 1 stock
     $products = Product::where('user_id', $userId)
-        ->where('stock', '>', 0) // Ensure the product has stock
+        ->where('stock', '>', 0)
         ->paginate(8);
-    
-    return view('checkout', compact('checkoutItems', 'totalPrice', 'products', 'allTypes'));
+
+    return view('checkout', compact('checkoutItems', 'totalPrice', 'products', 'allTypes', 'paymentTypes'));
 }
 
 
@@ -187,38 +191,38 @@ public function processCheckout(Request $request)
         return $carry + ($item['price'] * $item['quantity']);
     }, 0);
 
-    // Create the checkout record
+    // Get the selected payment type from the request
+    $paymentTypeId = $request->input('payment_type');
+
+    // Create the checkout record with payment type
     $checkoutId = DB::table('checkouts')->insertGetId([
         'user_id' => $userId,
         'total_price' => $totalPrice,
+        'payment_type_id' => $paymentTypeId,
         'created_at' => now(),
         'updated_at' => now()
     ]);
 
     // Create records for each item in the checkout and update product stock
     foreach ($checkoutItems as $item) {
-        // Fetch product name from the products table based on product ID
         $productName = Product::where('id', $item['product']->id)->value('name');
 
-        // Insert into checkout_items table
         DB::table('checkout_items')->insert([
             'checkout_id' => $checkoutId,
-            'product_name' => $productName,  // Store the product name
+            'product_name' => $productName,
             'quantity' => $item['quantity'],
             'price' => $item['price'],
         ]);
 
         // Update product stock
-        Product::where('id', $item['product']->id)
-            ->decrement('stock', $item['quantity']);
+        Product::where('id', $item['product']->id)->decrement('stock', $item['quantity']);
     }
 
-    // Retrieve the transaction type ID for "Sell"
+    // Add transaction record
     $transactionTypeId = DB::table('transaction_types')
         ->where('name', 'Penjualan')
         ->value('id');
 
-    // Insert the sell transaction record into the transactions table
     DB::table('transactions')->insert([
         'user_id' => $userId,
         'transaction_type_id' => $transactionTypeId,
@@ -236,17 +240,17 @@ public function processCheckout(Request $request)
 }
 
 
-
 public function viewCheckouts(Request $request)
 {
     $year = $request->input('year');
     $month = $request->input('month');
-    $searchId = $request->input('search_id'); // ID search input
+    $searchId = $request->input('search_id');
+    $paymentTypeId = $request->input('payment_type'); // New: Payment type filter
 
     $userId = Auth::id(); // Get the current user ID
 
     // Start building the query
-    $query = Checkout::query()->with('checkoutItems')
+    $query = Checkout::query()->with('checkoutItems', 'paymentType') // Add paymentType relationship
         ->where('user_id', $userId); // Filter by current user ID
 
     // Filter by year if provided
@@ -264,19 +268,34 @@ public function viewCheckouts(Request $request)
         $query->where('id', $searchId);
     }
 
+    // Filter by payment type if provided
+    if ($paymentTypeId) {
+        $query->where('payment_type_id', $paymentTypeId);
+    }
+
     // Order by creation date and paginate
     $checkouts = $query->orderBy('created_at', 'desc')->paginate(8);
 
-    return view('viewCheckouts', compact('checkouts'));
+    $paymentTypes = PaymentType::all(); // Fetch payment types for the filter dropdown
+
+    return view('viewCheckouts', compact('checkouts', 'paymentTypes'));
 }
 
 
 public function checkoutsDetails($id)
 {
     // Find the specific checkout by its ID and load related checkoutItems
-    $checkout = Checkout::with('checkoutItems')->findOrFail($id);
+    $checkout = Checkout::with('paymentType','checkoutItems')->findOrFail($id);
 
     return view('checkoutDetails', compact('checkout'));
+}
+
+
+public function printReceipt($id)
+{
+    $checkout = Checkout::with('checkoutItems', 'paymentType')->findOrFail($id); // Load checkout with items and payment type
+
+    return view('receipt', compact('checkout'));
 }
 
 }
