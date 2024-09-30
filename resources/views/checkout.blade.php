@@ -106,6 +106,13 @@
                 
                 <p class="text-lg font-semibold mb-4">Jumlah Harga: Rp.{{ $totalPrice }}</p>
                 <form action="{{ route('processCheckout') }}" method="POST" class="mt-6">
+                     <!-- Payment Option Dropdown -->
+    <label for="payment_type" class="block mb-2 text-sm font-medium text-gray-900">Pilih Metode Pembayaran</label>
+    <select name="payment_type" id="payment_type" class="w-full py-2 px-3 border rounded">
+        @foreach ($paymentTypes as $paymentType)
+            <option value="{{ $paymentType->id }}">{{ $paymentType->name }}</option>
+        @endforeach
+    </select>
                     @csrf
                     <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white font-semibold hover:bg-blue-700">Checkout</button>
                 </form>

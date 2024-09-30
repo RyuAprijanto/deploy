@@ -21,6 +21,15 @@
                     <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $month)->format('F') }}</option>
                 @endforeach
             </select>
+              <!-- Payment Type Filter -->
+              <select name="payment_type" id="paymentTypeFilter" class="px-4 py-2 border rounded-lg">
+                <option value="">Jenis Pembayaran</option>
+                @foreach ($paymentTypes as $paymentType)
+                    <option value="{{ $paymentType->id }}" {{ request('payment_type') == $paymentType->id ? 'selected' : '' }}>
+                        {{ $paymentType->name }}
+                    </option>
+                @endforeach
+            </select>
 			<!-- Search by ID -->
             <input type="text" name="search_id" value="{{ request('search_id') }}" placeholder="Pencarian ID Transaksi" class="px-4 py-2 border rounded">
         </form>
@@ -97,6 +106,9 @@
             document.getElementById('filterForm').submit();
         });
         document.getElementById('monthFilter').addEventListener('change', function () {
+            document.getElementById('filterForm').submit();
+        });
+        document.getElementById('paymentTypeFilter').addEventListener('change', function () {
             document.getElementById('filterForm').submit();
         });
     });

@@ -14,6 +14,10 @@
                         <span>{{ $checkout->id }}</span>
                     </p>
                     <p class="flex justify-between">
+                        <span class="text-gray-400">Jenis Pembayaran:</span>
+                        <span>{{ $checkout->paymentType->name }}</span>
+                    </p>
+                    <p class="flex justify-between">
                         <span class="text-gray-400">Tanggal Transaksi:</span>
                         <span>{{ $checkout->created_at->format('d M Y, H:i:s') }}</span>
                     </p>
@@ -62,7 +66,9 @@
                 <a>
             </div>
         </div>
+        <a href="{{ route('checkout.printReceipt', $checkout->id) }}" class="py-2.5 px-5 mt-8 ml-3 bottom-2 text-sm font-medium text-white focus:outline-none bg-blue-600 rounded-lg border border-blue-600 hover:bg-blue-700 hover:text-white focus:z-10 focus:ring-4 focus:ring-blue-200 align-middle">Cetak Bon</a>
          <a href="{{ route('viewCheckouts') }}" class="py-2.5 px-5 mt-8 ml-3 bottom-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 align-middle">Kembali</a>
+
     </div>
 
 </div>

@@ -113,5 +113,7 @@ Route::get('/transactions', [TransactionController::class, 'viewTransactions'])-
 Route::get('/transactions/add', [TransactionController::class, 'create'])->name('addTransaction')->middleware('auth');
 Route::post('/transactions/store', [TransactionController::class, 'store'])->name('storeTransaction')->middleware('auth');
 Route::get('/monthly-transactions', [TransactionController::class, 'viewAllMonthlyTransactions'])->name('monthlyTransactions')->middleware('auth');
+// In your routes/web.php
+Route::get('/checkout/{id}/receipt', [CheckoutController::class, 'printReceipt'])->name('checkout.printReceipt');
 
 
